@@ -1,19 +1,30 @@
 {
-  "name": "kilted desktop-full",
-  "dockerFile": "Dockerfile",
+  "name": "ROS2 Desktop with GUI",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
   "runArgs": [
-    "--privileged",
-    "--net=host",
-    "--pid=host",
-    "--ipc=host",
-    "-e", "DISPLAY=${env:DISPLAY}"
+    "--env=DISPLAY=host.docker.internal:0",
+    "--env=LIBGL_ALWAYS_SOFTWARE=1",   // Safe fallback
+    "--shm-size=2gb"
   ],
-  "workspaceMount": "source=${localWorkspaceFolder},target=/${localWorkspaceFolderBasename},type=bind",
-  "workspaceFolder": "/${localWorkspaceFolderBasename}",
-  "mounts": [
-    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.bash_history,target=/home/vscode/.bash_history,type=bind"
-],
-"features": {
-	"ghcr.io/guiyomh/features/vim:0": {}
-}
+  "containerEnv": {
+    "DISPLAY": "host.docker.internal:0",
+    "QT_X11_NO_MITSHM": "1",
+    "XAUTHORITY": "/tmp/.Xauthority"
+  },
+  "remoteUser": "vscode",
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-iot.vscode-ros",
+        "twxs.cmake",
+        "ms-vscode.cpptools"
+      ]
+    }
+  }
 }

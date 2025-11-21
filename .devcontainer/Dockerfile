@@ -1,43 +1,39 @@
-FROM osrf/ros:kilted-desktop-full
+# You can change humble -> foxy / galactic / iron / jazzy / etc
+FROM ros:kilted
 
-# Add ubuntu user with same UID and GID as your host system, if it doesn't already exist
-# Since Ubuntu 24.04, a non-root user is created by default with the name vscode and UID=1000
-ARG USERNAME=ubuntu
-ARG USER_UID=1000
-ARG USER_GID=$USER_UID
-RUN if ! id -u $USER_UID >/dev/null 2>&1; then \
-        groupadd --gid $USER_GID $USERNAME && \
-        useradd -s /bin/bash --uid $USER_UID --gid $USER_GID -m $USERNAME; \
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install development + GUI deps
+RUN apt-get update && apt-get install -y \
+    ros-kilted-rviz2 \
+    ros-kilted-navigation2 \
+    ros-kilted-turtlebot3* \
+    mesa-utils \
+    x11-apps \
+    build-essential \
+    python3-colcon-common-extensions \
+    terminator \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create default user for VS Code
+ARG USERNAME=vscode
+ARG USER_UID=2001
+ARG USER_GID=2001
+
+RUN if ! getent group ${USER_GID} >/dev/null; then \
+        groupadd --gid ${USER_GID} ${USERNAME}; \
     fi
-# Add sudo support for the non-root user
-RUN apt-get update && \
-    apt-get install -y sudo && \
-    echo "$USERNAME ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/$USERNAME && \
-    chmod 0440 /etc/sudoers.d/$USERNAME
 
-# Switch from root to user
+# Create user if UID is not already taken
+RUN if ! id -u ${USER_UID} >/dev/null 2>&1; then \
+        useradd -m --uid ${USER_UID} --gid ${USER_GID} -s /bin/bash ${USERNAME}; \
+    else \
+        echo "UID ${USER_UID} already exists, using existing user."; \
+    fi
+# ROS entrypoint
+# COPY setup-ros.sh /usr/local/bin/setup-ros.sh
+# RUN chmod +x /usr/local/bin/setup-ros.sh
+
 USER $USERNAME
+SHELL ["/bin/bash", "-c"]
 
-# Add user to video group to allow access to webcam
-RUN sudo usermod --append --groups video $USERNAME
-
-# Update all packages
-RUN sudo apt update && sudo apt upgrade -y
-
-# Install Git
-RUN sudo apt install -y git
-
-# Rosdep update
-RUN rosdep update
-
-# Source the ROS setup file
-RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ~/.bashrc
-
-################################
-## ADD ANY CUSTOM SETUP BELOW ##
-################################
-
-# Install Nav2 navigation stack
-RUN sudo apt update && sudo apt install -y \
-    ros-${ROS_DISTRO}-navigation2 \
-    ros-${ROS_DISTRO}-nav2-bringup 
