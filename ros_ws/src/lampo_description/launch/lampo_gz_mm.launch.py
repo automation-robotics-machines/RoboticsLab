@@ -81,6 +81,10 @@ def generate_launch_description():
         executable="robot_state_publisher",
         namespace="sweepee_1",
         output="screen",
+        remappings=[
+            ('/tf', 'tf'),
+            ('/tf_static', 'tf_static')
+        ],
         parameters=[robot_description_1,frame_prefix_param_1,{"use_sim_time": True}],
     )
 
@@ -89,6 +93,10 @@ def generate_launch_description():
         executable="robot_state_publisher",
         namespace="sweepee_2",
         output="screen",
+        remappings=[
+            ('/tf', 'tf'),
+            ('/tf_static', 'tf_static')
+        ],
         parameters=[robot_description_2,frame_prefix_param_2,{"use_sim_time": True}],
     )
 
@@ -123,6 +131,30 @@ def generate_launch_description():
         parameters=[{"use_sim_time": True}],
     )
 
+########## TF merge #########
+
+    tf_1 = Node(
+        package="topic_tools",
+        executable="relay",
+        name='relay_tf1_to_global',
+        arguments=['sweepee_1/tf', '/tf'],
+
+    )
+    
+    tf_1s = Node(
+        package="topic_tools",
+        executable="relay",
+        name='relay_tf1s_to_global',
+        arguments=['sweepee_1/tf_static', '/tf_static'],
+
+    )
+
+    twist_repub = Node(
+        package="lampo_description",
+        executable="twist_repub.py",
+        name='twist_repub'
+
+    )
 
 
 ########## VISUALIZATION
@@ -155,22 +187,6 @@ def generate_launch_description():
         arguments=["-d", rviz_config_file],
     )
 
-
-    tf_sw1 = Node(
-            package="tf2_ros",
-            executable="static_transform_publisher",
-            output="screen" ,
-            arguments=["0", "0", "0", "0", "0", "0", "sweepee_1/odom", "sweepee_1/base_footprint"],
-            parameters=[{"use_sim_time": True}]
-        )
-
-    tf_sw2 = Node(
-            package="tf2_ros",
-            executable="static_transform_publisher",
-            output="screen" ,
-            arguments=["0", "0", "0", "0", "0", "0", "sweepee_2/odom", "sweepee_2/base_footprint"],
-            parameters=[{"use_sim_time": True}]
-        )
 
 ########## BRIDGE
 
@@ -208,6 +224,9 @@ def generate_launch_description():
     nodes_to_start = [
         gazebo_server,
         rviz_node,
+        tf_1,
+        tf_1s,
+        twist_repub,
         TimerAction(
             period=5.0,
             actions=[spawn_sweepee_1,robot_state_publisher_node_1],

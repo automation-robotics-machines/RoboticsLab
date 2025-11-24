@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-                'rostogz = lampo_description.ros_to_gz_commands:main',
+                'twist_repub = lampo_description.twist_repub:main',
         ],
 },
 )
