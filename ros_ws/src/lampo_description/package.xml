@@ -3,31 +3,59 @@
 <package format="3">
   <name>lampo_description</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>LAMPO (Localization And Motion Planning Omnidirectional) robot simulation package for ROS 2</description>
   <maintainer email="stefano.mutti@stiima.cnr.it">kolmogorov</maintainer>
-  <license>TODO: License declaration</license>
+  <license>Apache-2.0</license>
 
+  <!-- Build tools -->
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>ament_cmake_python</buildtool_depend>
+
+  <!-- Core ROS dependencies -->
   <depend>rclcpp</depend>
   <depend>rclpy</depend>
+
+  <!-- Launch and description -->
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>xacro</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+
+  <!-- Gazebo and simulation -->
+  <depend>gazebo_ros</depend>
+  <exec_depend>ros_gz_sim</exec_depend>
+  <exec_depend>ros_gz_bridge</exec_depend>
+
+  <!-- Robot description -->
+  <exec_depend>ur_description</exec_depend>
+
+  <!-- Messages -->
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+
+  <!-- Control and manipulation -->
+  <exec_depend>topic_based_ros2_control</exec_depend>
+
+  <!-- Topic tools -->
+  <exec_depend>topic_tools</exec_depend>
+
+  <!-- Visualization -->
+  <exec_depend>rviz2</exec_depend>
+
+  <!-- Navigation -->
+  <exec_depend>nav2_bringup</exec_depend>
+  <exec_depend>nav2_common</exec_depend>
+  <exec_depend>navigation2</exec_depend>
+  <exec_depend>nav2_msgs</exec_depend>
+
+  <!-- Testing -->
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 
-  <build_depend>gazebo_ros</build_depend>
-  <exec_depend>gazebo_ros</exec_depend>
-
-  <build_depend>ur_description</build_depend>
-  <exec_depend>ur_description</exec_depend>
-
-  <exec_depend>std_msgs</exec_depend>
-  <exec_depend>sensor_msgs</exec_depend>
-  <exec_depend>topic_based_ros2_control</exec_depend>
-  
-
   <export>
-    <!-- <gazebo_ros gazebo_model_path="${prefix}/meshes"/> -->
-    <gazebo_ros gazebo_model_path="${prefix}/.." /> 
+    <!-- Gazebo model and media paths -->
+    <gazebo_ros gazebo_model_path="${prefix}/.." />
     <gazebo_ros gazebo_media_path="${prefix}/meshes"/>
     <build_type>ament_cmake</build_type>
   </export>

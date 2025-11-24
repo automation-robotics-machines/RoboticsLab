@@ -7,6 +7,7 @@ from pathlib import Path
 from launch import LaunchDescription, LaunchContext, LaunchService
 from launch.actions import DeclareLaunchArgument, TimerAction
 from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution
+from launch.conditions import IfCondition
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 from launch.substitutions import PathJoinSubstitution, TextSubstitution
@@ -42,9 +43,17 @@ def generate_launch_description():
         )
     )
 
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "mm",
+            default_value='false',
+            description="mobile manipulators",
+        )
+    )
     
     description_package      = LaunchConfiguration("description_package")
     description_file         = LaunchConfiguration("description_file")
+    mm                       = LaunchConfiguration("mm")
 
 
 
@@ -55,6 +64,7 @@ def generate_launch_description():
             PathJoinSubstitution([FindPackageShare(description_package), "urdf", description_file]),
             " ","name:=","mm1",
             " ","omni:=","true",
+            " ","mm:=",mm,
             " ","prefix:=","sweepee_1/"
         ]), value_type=str)
 
@@ -65,6 +75,7 @@ def generate_launch_description():
             PathJoinSubstitution([FindPackageShare(description_package), "urdf", description_file]),
             " ","name:=","mm2",
             " ","omni:=","true",
+            " ","mm:=",mm,
             " ","prefix:=","sweepee_2/"
         ]), value_type=str)
     
@@ -202,22 +213,24 @@ def generate_launch_description():
             parameters=[config_param,{"use_sim_time": True}],
         )
 
-    # ros_to_gz_1 = Node(
-    #         package="lampo_description",
-    #         executable="ros_to_gz_commands.py",
-    #         namespace="sweepee_1",
-    #         output="screen",
-    #         parameters=[{"use_sim_time": True}],
-    #     )
+########## UR CONTROLLERS 
 
-    # ros_to_gz_2 = Node(
-    #         package="lampo_description",
-    #         executable="ros_to_gz_commands.py",
-    #         namespace="sweepee_2",
-    #         output="screen",
-    #         parameters=[{"use_sim_time": True}],
-    #     )
+    joint_state_broadcaster_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["joint_state_broadcaster"],
+        namespace="sweepee_1",
+        condition=IfCondition(mm),
+    )
     
+    start_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["forward_position_controller"],
+        namespace="sweepee_1",
+        condition=IfCondition(mm),
+    )
+
 ########## LAUNCHING
 
 
@@ -229,7 +242,7 @@ def generate_launch_description():
         twist_repub,
         TimerAction(
             period=5.0,
-            actions=[spawn_sweepee_1,robot_state_publisher_node_1],
+            actions=[spawn_sweepee_1,robot_state_publisher_node_1,joint_state_broadcaster_spawner,start_controller_spawner],
         ),
         # TimerAction(
         #     period=4.0,
