@@ -6,29 +6,13 @@
   lazy: false               
   direction: BIDIRECTIONAL  
                             
-- ros_topic_name: "/sweepee_2/cmd_vel"
-  ros_type_name: "geometry_msgs/msg/Twist"
-  gz_type_name: "gz.msgs.Twist"
-  subscriber_queue: 10       
-  publisher_queue: 10        
-  lazy: false               
-  direction: BIDIRECTIONAL  
-                            
 - ros_topic_name: "/sweepee_1/odom"
   ros_type_name: "nav_msgs/msg/Odometry"
   gz_type_name: "gz.msgs.Odometry"
   subscriber_queue: 10      
   publisher_queue: 10       
   lazy: false              
-  direction: GZ_TO_ROS                         
-                        
-- ros_topic_name: "/sweepee_2/odom"
-  ros_type_name: "nav_msgs/msg/Odometry"
-  gz_type_name: "gz.msgs.Odometry"
-  subscriber_queue: 10       
-  publisher_queue: 10        
-  lazy: false               
-  direction: GZ_TO_ROS                         
+  direction: GZ_TO_ROS                                              
                             
 - ros_topic_name: "/sweepee_1/lidar"
   ros_type_name: "sensor_msgs/msg/LaserScan"
@@ -36,15 +20,7 @@
   subscriber_queue: 10       
   publisher_queue: 10        
   lazy: false               
-  direction: GZ_TO_ROS                        
-
-- ros_topic_name: "/sweepee_2/lidar"
-  ros_type_name: "sensor_msgs/msg/LaserScan"
-  gz_type_name: "gz.msgs.LaserScan"
-  subscriber_queue: 10       
-  publisher_queue: 10        
-  lazy: false               
-  direction: GZ_TO_ROS                             
+  direction: GZ_TO_ROS                                           
 
 - ros_topic_name: "/sweepee_1/imu"
   ros_type_name: "sensor_msgs/msg/Imu"
@@ -62,17 +38,7 @@
   lazy: false               
   direction: GZ_TO_ROS  
                             
-
 - ros_topic_name: "sweepee_1/tf"
-  gz_topic_name: /tf
-  ros_type_name: "tf2_msgs/msg/TFMessage"
-  gz_type_name: "gz.msgs.Pose_V"
-  subscriber_queue: 10
-  publisher_queue: 10
-  lazy: false
-  direction: GZ_TO_ROS
-
-- ros_topic_name: "sweepee_2/tf"
   gz_topic_name: /tf
   ros_type_name: "tf2_msgs/msg/TFMessage"
   gz_type_name: "gz.msgs.Pose_V"

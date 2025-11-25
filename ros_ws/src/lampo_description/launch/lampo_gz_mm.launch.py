@@ -16,10 +16,8 @@ from ament_index_python import get_package_share_directory
 from launch.actions import IncludeLaunchDescription,ExecuteProcess 
 from launch.actions import GroupAction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-# from scripts import GazeboRosPaths
 import launch_ros.descriptions
 
-import xacro
 
 
 
@@ -51,6 +49,15 @@ def generate_launch_description():
         )
     )
     
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "robot_name",
+            default_value="sweepee_1",
+            description="Name of the robot namespace"
+        )
+    )
+
+    robot_name               = LaunchConfiguration("robot_name")
     description_package      = LaunchConfiguration("description_package")
     description_file         = LaunchConfiguration("description_file")
     mm                       = LaunchConfiguration("mm")
@@ -67,25 +74,10 @@ def generate_launch_description():
             " ","mm:=",mm,
             " ","prefix:=","sweepee_1/"
         ]), value_type=str)
-
-    robot_description_content_2 = launch_ros.descriptions.ParameterValue(Command(
-        [
-            PathJoinSubstitution([FindExecutable(name="xacro")]),
-            " ",
-            PathJoinSubstitution([FindPackageShare(description_package), "urdf", description_file]),
-            " ","name:=","mm2",
-            " ","omni:=","true",
-            " ","mm:=",mm,
-            " ","prefix:=","sweepee_2/"
-        ]), value_type=str)
-    
+  
 
     robot_description_1  = {"robot_description": robot_description_content_1}
-    robot_description_2  = {"robot_description": robot_description_content_2}
-
-
     frame_prefix_param_1 = {"frame_prefix": ""}
-    frame_prefix_param_2 = {"frame_prefix": ""}
     
     robot_state_publisher_node_1 = Node(
         package="robot_state_publisher",
@@ -97,18 +89,6 @@ def generate_launch_description():
             ('/tf_static', 'tf_static')
         ],
         parameters=[robot_description_1,frame_prefix_param_1,{"use_sim_time": True}],
-    )
-
-    robot_state_publisher_node_2 = Node(
-        package="robot_state_publisher",
-        executable="robot_state_publisher",
-        namespace="sweepee_2",
-        output="screen",
-        remappings=[
-            ('/tf', 'tf'),
-            ('/tf_static', 'tf_static')
-        ],
-        parameters=[robot_description_2,frame_prefix_param_2,{"use_sim_time": True}],
     )
 
     spawn_sweepee_1 = Node(
@@ -124,21 +104,6 @@ def generate_launch_description():
                    '-z', '0.2',
                    '-Y', '0.3'],
         remappings=[('/sweepee', 'sweepee_1/robot_description')],
-        parameters=[{"use_sim_time": True}],
-    )
-
-    spawn_sweepee_2 = Node(
-        name='spawn2',
-        package='ros_gz_sim',
-        executable='create',
-        output='screen',
-        arguments=['-topic', 'sweepee_2/robot_description',
-                   '-name', 'sweepee_2',
-                   '-allow_renaming', 'true',
-                   '-x', '-3.0',
-                   '-y', '-2.0',
-                   '-z', '0.2'],
-        remappings=[('/sweepee', 'sweepee_2/robot_description')],
         parameters=[{"use_sim_time": True}],
     )
 
@@ -231,6 +196,14 @@ def generate_launch_description():
         condition=IfCondition(mm),
     )
 
+    gripper_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["gripper_position_controller"],
+        namespace="sweepee_1",
+        condition=IfCondition(mm),
+    )
+
 ########## LAUNCHING
 
 
@@ -242,12 +215,8 @@ def generate_launch_description():
         twist_repub,
         TimerAction(
             period=5.0,
-            actions=[spawn_sweepee_1,robot_state_publisher_node_1,joint_state_broadcaster_spawner,start_controller_spawner],
+            actions=[spawn_sweepee_1,robot_state_publisher_node_1,joint_state_broadcaster_spawner,start_controller_spawner,gripper_controller_spawner],
         ),
-        # TimerAction(
-        #     period=4.0,
-        #     actions=[spawn_sweepee_2,robot_state_publisher_node_2],
-        # ),
         TimerAction(
             period=5.0,
             actions=[gz_bridge]
