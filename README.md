@@ -1,6 +1,6 @@
 # RoboticsLab - LAMPO Robot Simulation
 
-This repository contains ROS 2 packages for the LAMPO robot simulation using Gazebo and Nav2 navigation stack.
+This repository contains ROS 2 packages for a robotic system simulation using Gazebo(gz) and the Nav2 navigation stack.
 
 ## Prerequisites
 
@@ -71,7 +71,6 @@ Windows users can run this project using VSCode devcontainers with graphical sup
    - Launch XLaunch from the Start menu
    - Select "Multiple windows" and set display number to 0
    - Select "Start no client"
-   - **Important:** Check "Disable access control"
    - Save the configuration for future use
 
 2. **Allow VcXsrv through Windows Firewall:**
