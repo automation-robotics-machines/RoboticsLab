@@ -83,7 +83,7 @@ Windows users can run this project using VSCode devcontainers with graphical sup
    - Note your IPv4 address (typically 192.168.x.x or similar)
 
 4. **Configure the devcontainer:**
-   - Open the project in VSCode
+   - Open the folder in VSCode
    - The `.devcontainer` configuration should already be set up
    - Ensure the `DISPLAY` environment variable is correctly set in `.devcontainer/devcontainer.json`
 
