@@ -1,4 +1,4 @@
-sweepee_1:  
+/**:  
   controller_manager:
     ros__parameters:
       update_rate: 500  # Hz
@@ -35,12 +35,12 @@ sweepee_1:
   joint_trajectory_controller:
     ros__parameters:
       joints:
-        - sweepee_1/shoulder_pan_joint
-        - sweepee_1/shoulder_lift_joint
-        - sweepee_1/elbow_joint
-        - sweepee_1/wrist_1_joint
-        - sweepee_1/wrist_2_joint
-        - sweepee_1/wrist_3_joint
+        - r1_shoulder_pan_joint
+        - r1_shoulder_lift_joint
+        - r1_elbow_joint
+        - r1_wrist_1_joint
+        - r1_wrist_2_joint
+        - r1_wrist_3_joint
       command_interfaces:
         - position
       state_interfaces:
@@ -63,12 +63,12 @@ sweepee_1:
   scaled_joint_trajectory_controller:
     ros__parameters:
       joints:
-        - sweepee_1/shoulder_pan_joint
-        - sweepee_1/shoulder_lift_joint
-        - sweepee_1/elbow_joint
-        - sweepee_1/wrist_1_joint
-        - sweepee_1/wrist_2_joint
-        - sweepee_1/wrist_3_joint
+        - r1_shoulder_pan_joint
+        - r1_shoulder_lift_joint
+        - r1_elbow_joint
+        - r1_wrist_1_joint
+        - r1_wrist_2_joint
+        - r1_wrist_3_joint
       command_interfaces:
         - position
       state_interfaces:
@@ -91,27 +91,27 @@ sweepee_1:
   forward_velocity_controller:
     ros__parameters:
       joints:
-        - sweepee_1/shoulder_pan_joint
-        - sweepee_1/shoulder_lift_joint
-        - sweepee_1/elbow_joint
-        - sweepee_1/wrist_1_joint
-        - sweepee_1/wrist_2_joint
-        - sweepee_1/wrist_3_joint
+        - r1_shoulder_pan_joint
+        - r1_shoulder_lift_joint
+        - r1_elbow_joint
+        - r1_wrist_1_joint
+        - r1_wrist_2_joint
+        - r1_wrist_3_joint
       interface_name: velocity
 
   forward_position_controller:
     ros__parameters:
       joints:
-        - sweepee_1/shoulder_pan_joint
-        - sweepee_1/shoulder_lift_joint
-        - sweepee_1/elbow_joint
-        - sweepee_1/wrist_1_joint
-        - sweepee_1/wrist_2_joint
-        - sweepee_1/wrist_3_joint
+        - r1_shoulder_pan_joint
+        - r1_shoulder_lift_joint
+        - r1_elbow_joint
+        - r1_wrist_1_joint
+        - r1_wrist_2_joint
+        - r1_wrist_3_joint
 
   gripper_position_controller:
     ros__parameters:
       joints:
-        - sweepee_1/robotiq_85_left_knuckle_joint
+        - r1_robotiq_85_left_knuckle_joint
 
 

@@ -27,7 +27,7 @@
       <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
       <always_on>1</always_on>
       <update_rate>30</update_rate>
-      <topic>$(arg prefix)rgbd_camera</topic>
+      <topic>$(arg prefix)/rgbd_camera</topic>
       <camera name="rs_front">
         <horizontal_fov>1.50098</horizontal_fov>
         <lens>

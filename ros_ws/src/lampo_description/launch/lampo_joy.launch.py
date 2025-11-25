@@ -39,7 +39,7 @@ def generate_launch_description():
         executable='teleop_node',
         name='teleop_twist_joy_node',
         parameters=[joy_teleop_file],
-        remappings={('/cmd_vel', 'sweepee_1/cmd_vel')},
+        remappings={('/cmd_vel', 'r1_/cmd_vel')},
         )
 
     nodes_to_start = [

@@ -54,17 +54,16 @@ def generate_launch_description() -> LaunchDescription:
     yaml_substitutions = {
         'KEEPOUT_ZONE_ENABLED': use_keepout_zones,
         'SPEED_ZONE_ENABLED': use_speed_zones,
+        'prefix/base_footprint': [namespace, 'base_footprint'],
+        'prefix/odom': [namespace, 'odom']
     }
 
-    configured_params = ParameterFile(
-        RewrittenYaml(
-            source_file=params_file,
-            root_key=namespace,
-            param_rewrites={},
-            value_rewrites=yaml_substitutions,
-            convert_types=True,
-        ),
-        allow_substs=True,
+    configured_params = RewrittenYaml(
+        source_file=params_file,
+        root_key='',
+        param_rewrites={},
+        value_rewrites=yaml_substitutions,
+        convert_types=True,
     )
 
     stdout_linebuf_envvar = SetEnvironmentVariable(
@@ -72,7 +71,7 @@ def generate_launch_description() -> LaunchDescription:
     )
 
     declare_namespace_cmd = DeclareLaunchArgument(
-        'namespace', default_value='sweepee_1', description='Top-level namespace'
+        'namespace', default_value='r1_', description='Top-level namespace'
     )
 
     declare_slam_cmd = DeclareLaunchArgument(
@@ -121,7 +120,7 @@ def generate_launch_description() -> LaunchDescription:
 
     declare_params_file_cmd = DeclareLaunchArgument(
         'params_file',
-        default_value=os.path.join(lampo_dir, 'config', 'nav2_params_omni_1.yaml'),
+        default_value=os.path.join(lampo_dir, 'config', 'nav2_params_omni.yaml'),
         description='Full path to the ROS2 parameters file to use for all launched nodes',
     )
 
@@ -156,7 +155,7 @@ def generate_launch_description() -> LaunchDescription:
                 name='nav2_container',
                 package='rclcpp_components',
                 executable='component_container_isolated',
-                parameters=[configured_params, {'autostart': autostart}],
+                parameters=[ParameterFile(configured_params, allow_substs=True), {'autostart': autostart}],
                 arguments=['--ros-args', '--log-level', log_level],
                 remappings=remappings,
                 output='screen',
@@ -171,7 +170,7 @@ def generate_launch_description() -> LaunchDescription:
                     'use_sim_time': use_sim_time,
                     'autostart': autostart,
                     'use_respawn': use_respawn,
-                    'params_file': params_file,
+                    'params_file': configured_params,
                 }.items(),
             ),
             IncludeLaunchDescription(
@@ -184,7 +183,7 @@ def generate_launch_description() -> LaunchDescription:
                     'map': os.path.join(lampo_dir, 'map', 'map.yaml'),
                     'use_sim_time': use_sim_time,
                     'autostart': autostart,
-                    'params_file': params_file,
+                    'params_file': configured_params,
                     'use_composition': use_composition,
                     'use_respawn': use_respawn,
                     'container_name': 'nav2_container',
@@ -200,7 +199,7 @@ def generate_launch_description() -> LaunchDescription:
                     'namespace': namespace,
                     'keepout_mask': keepout_mask_yaml_file,
                     'use_sim_time': use_sim_time,
-                    'params_file': params_file,
+                    'params_file': configured_params,
                     'use_composition': use_composition,
                     'use_respawn': use_respawn,
                     'container_name': 'nav2_container',
@@ -216,7 +215,7 @@ def generate_launch_description() -> LaunchDescription:
                     'namespace': namespace,
                     'speed_mask': speed_mask_yaml_file,
                     'use_sim_time': use_sim_time,
-                    'params_file': params_file,
+                    'params_file': configured_params,
                     'use_composition': use_composition,
                     'use_respawn': use_respawn,
                     'container_name': 'nav2_container',
@@ -232,7 +231,7 @@ def generate_launch_description() -> LaunchDescription:
                     'use_sim_time': use_sim_time,
                     'autostart': autostart,
                     'graph': graph_filepath,
-                    'params_file': params_file,
+                    'params_file': configured_params,
                     'use_composition': use_composition,
                     'use_respawn': use_respawn,
                     'container_name': 'nav2_container',

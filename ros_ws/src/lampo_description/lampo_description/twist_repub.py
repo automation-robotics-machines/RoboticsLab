@@ -7,18 +7,25 @@ from geometry_msgs.msg import TwistStamped, Twist
 class TwistConverter(Node):
     def __init__(self):
         super().__init__('twist_stamped_to_twist')
-        
+
+        # Declare and get the robot namespace parameter
+        self.declare_parameter('robot_namespace', 'r1_')
+        robot_ns = self.get_parameter('robot_namespace').get_parameter_value().string_value
+
+        # Build topic names with namespace
+        input_topic = f"/{robot_ns}/cmd_vel_smoothed"
+        output_topic = f"/{robot_ns}/cmd_vel"
 
         # Subscriber and Publisher
         self.subscription = self.create_subscription(
             TwistStamped,
-            "/sweepee_1/cmd_vel_smoothed",
+            input_topic,
             self.listener_callback,
             10
         )
-        self.publisher = self.create_publisher(Twist, "/sweepee_1/cmd_vel", 10)
+        self.publisher = self.create_publisher(Twist, output_topic, 10)
 
-        self.get_logger().info("Started topic repub")
+        self.get_logger().info(f"Started topic repub for namespace: {robot_ns}")
 
     def listener_callback(self, msg: TwistStamped):
         twist_msg = Twist()

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<robot name="mm1" xmlns:xacro="http://ros.org/wiki/xacro" xmlns:gz="http://gazebosim.org/schema">>
+<robot name="$(arg prefix)/mm1" xmlns:xacro="http://ros.org/wiki/xacro" xmlns:gz="http://gazebosim.org/schema">>
 
   <xacro:arg name="omni" default="false" />
   <xacro:arg name="mm" default="false" />

@@ -1,4 +1,4 @@
-- ros_topic_name: "/sweepee_1/cmd_vel"
+- ros_topic_name: "/prefix/cmd_vel"
   ros_type_name: "geometry_msgs/msg/Twist"
   gz_type_name: "gz.msgs.Twist"
   subscriber_queue: 10  
@@ -6,7 +6,7 @@
   lazy: false               
   direction: BIDIRECTIONAL  
                             
-- ros_topic_name: "/sweepee_1/odom"
+- ros_topic_name: "/prefix/odom"
   ros_type_name: "nav_msgs/msg/Odometry"
   gz_type_name: "gz.msgs.Odometry"
   subscriber_queue: 10      
@@ -14,7 +14,7 @@
   lazy: false              
   direction: GZ_TO_ROS                                              
                             
-- ros_topic_name: "/sweepee_1/lidar"
+- ros_topic_name: "/prefix/lidar"
   ros_type_name: "sensor_msgs/msg/LaserScan"
   gz_type_name: "gz.msgs.LaserScan"
   subscriber_queue: 10       
@@ -22,7 +22,7 @@
   lazy: false               
   direction: GZ_TO_ROS                                           
 
-- ros_topic_name: "/sweepee_1/imu"
+- ros_topic_name: "/prefix/imu"
   ros_type_name: "sensor_msgs/msg/Imu"
   gz_type_name: "gz.msgs.IMU"
   subscriber_queue: 10       
@@ -38,7 +38,7 @@
   lazy: false               
   direction: GZ_TO_ROS  
                             
-- ros_topic_name: "sweepee_1/tf"
+- ros_topic_name: "/prefix/tf"
   gz_topic_name: /tf
   ros_type_name: "tf2_msgs/msg/TFMessage"
   gz_type_name: "gz.msgs.Pose_V"

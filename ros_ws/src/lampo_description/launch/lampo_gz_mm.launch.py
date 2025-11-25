@@ -17,6 +17,9 @@ from launch.actions import IncludeLaunchDescription,ExecuteProcess
 from launch.actions import GroupAction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 import launch_ros.descriptions
+from nav2_common.launch import RewrittenYaml
+import yaml
+import tempfile
 
 
 
@@ -51,13 +54,13 @@ def generate_launch_description():
     
     declared_arguments.append(
         DeclareLaunchArgument(
-            "robot_name",
-            default_value="sweepee_1",
-            description="Name of the robot namespace"
+            "robot_namespace",
+            default_value="r1_",
+            description="Namespace and tf prefix for the robot"
         )
     )
 
-    robot_name               = LaunchConfiguration("robot_name")
+    robot_namespace          = LaunchConfiguration("robot_namespace")
     description_package      = LaunchConfiguration("description_package")
     description_file         = LaunchConfiguration("description_file")
     mm                       = LaunchConfiguration("mm")
@@ -69,11 +72,12 @@ def generate_launch_description():
             PathJoinSubstitution([FindExecutable(name="xacro")]),
             " ",
             PathJoinSubstitution([FindPackageShare(description_package), "urdf", description_file]),
-            " ","name:=","mm1",
+            " ","name:=",robot_namespace,"/mm1",
             " ","omni:=","true",
             " ","mm:=",mm,
-            " ","prefix:=","sweepee_1/"
-        ]), value_type=str)
+            " ","prefix:=",robot_namespace,
+            ]), value_type=str)
+
   
 
     robot_description_1  = {"robot_description": robot_description_content_1}
@@ -82,7 +86,8 @@ def generate_launch_description():
     robot_state_publisher_node_1 = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
-        namespace="sweepee_1",
+        # name="robot_state_publisher_" + robot_namespace,
+        namespace=robot_namespace,
         output="screen",
         remappings=[
             ('/tf', 'tf'),
@@ -96,14 +101,14 @@ def generate_launch_description():
         package='ros_gz_sim',
         executable='create',
         output='screen',
-        arguments=[ '-topic', 'sweepee_1/robot_description',
-                   '-name', 'sweepee_1',
+        arguments=[ '-topic', [robot_namespace, '/robot_description'],
+                   '-name', robot_namespace,
                    '-allow_renaming', 'true',
                    '-x', '-3.5',
                    '-y', '2.2',
                    '-z', '0.2',
                    '-Y', '0.3'],
-        remappings=[('/sweepee', 'sweepee_1/robot_description')],
+        # remappings=[('/sweepee', [robot_namespace, '/robot_description'])],
         parameters=[{"use_sim_time": True}],
     )
 
@@ -112,24 +117,27 @@ def generate_launch_description():
     tf_1 = Node(
         package="topic_tools",
         executable="relay",
+        namespace=robot_namespace,
         name='relay_tf1_to_global',
-        arguments=['sweepee_1/tf', '/tf'],
+        arguments=[['tf'], '/tf'],
 
     )
-    
+
     tf_1s = Node(
         package="topic_tools",
         executable="relay",
+        namespace=robot_namespace,
         name='relay_tf1s_to_global',
-        arguments=['sweepee_1/tf_static', '/tf_static'],
+        arguments=[['tf_static'], '/tf_static'],
 
     )
 
     twist_repub = Node(
         package="lampo_description",
         executable="twist_repub.py",
-        name='twist_repub'
-
+        namespace=robot_namespace,
+        name='twist_repub',
+        parameters=[{'robot_namespace': robot_namespace}]
     )
 
 
@@ -166,17 +174,43 @@ def generate_launch_description():
 
 ########## BRIDGE
 
-    config_bridge = os.path.join(get_package_share_directory('lampo_description'),
-                              'config', 'bridge.yaml')
-    
-    config_param  = {"config_file": config_bridge}
+    def create_bridge_config(context):
+        namespace = context.perform_substitution(robot_namespace)
 
-    gz_bridge = Node(
+        # Load original bridge config
+        bridge_file = os.path.join(get_package_share_directory('lampo_description'), 'config', 'bridge.yaml')
+        with open(bridge_file, 'r') as f:
+            bridge_data = yaml.safe_load(f)
+
+        # Perform substitutions
+        for bridge_item in bridge_data:
+            if 'ros_topic_name' in bridge_item:
+                topic = bridge_item['ros_topic_name']
+                if topic == '/prefix/cmd_vel':
+                    bridge_item['ros_topic_name'] = f'/{namespace}/cmd_vel'
+                elif topic == '/prefix/odom':
+                    bridge_item['ros_topic_name'] = f'/{namespace}/odom'
+                elif topic == '/prefix/lidar':
+                    bridge_item['ros_topic_name'] = f'/{namespace}/lidar'
+                elif topic == '/prefix/imu':
+                    bridge_item['ros_topic_name'] = f'/{namespace}/imu'
+                elif topic == '/prefix/tf':
+                    bridge_item['ros_topic_name'] = f'/{namespace}/tf'
+
+        # Write to temporary file
+        temp_file = tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False)
+        yaml.dump(bridge_data, temp_file)
+        temp_file.close()
+
+        return [Node(
             package="ros_gz_bridge",
             executable="parameter_bridge",
-            output="screen" ,
-            parameters=[config_param,{"use_sim_time": True}],
-        )
+            namespace=robot_namespace,
+            output="screen",
+            parameters=[{"config_file": temp_file.name}, {"use_sim_time": True}],
+        )]
+
+    gz_bridge = OpaqueFunction(function=create_bridge_config)
 
 ########## UR CONTROLLERS 
 
@@ -184,15 +218,15 @@ def generate_launch_description():
         package="controller_manager",
         executable="spawner",
         arguments=["joint_state_broadcaster"],
-        namespace="sweepee_1",
+        namespace=robot_namespace,
         condition=IfCondition(mm),
     )
-    
+
     start_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
         arguments=["forward_position_controller"],
-        namespace="sweepee_1",
+        namespace=robot_namespace,
         condition=IfCondition(mm),
     )
 
@@ -200,7 +234,7 @@ def generate_launch_description():
         package="controller_manager",
         executable="spawner",
         arguments=["gripper_position_controller"],
-        namespace="sweepee_1",
+        namespace=robot_namespace,
         condition=IfCondition(mm),
     )
 
@@ -213,12 +247,13 @@ def generate_launch_description():
         tf_1,
         tf_1s,
         twist_repub,
+        robot_state_publisher_node_1,
         TimerAction(
             period=5.0,
-            actions=[spawn_sweepee_1,robot_state_publisher_node_1,joint_state_broadcaster_spawner,start_controller_spawner,gripper_controller_spawner],
+            actions=[spawn_sweepee_1,joint_state_broadcaster_spawner,start_controller_spawner,gripper_controller_spawner],
         ),
         TimerAction(
-            period=5.0,
+            period=1.0,
             actions=[gz_bridge]
         ),
     ]

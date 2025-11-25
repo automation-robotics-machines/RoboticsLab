@@ -234,7 +234,7 @@
           <always_on>1</always_on>
           <update_rate>10</update_rate>
           <visualize>true</visualize>
-          <topic>${prefix}imu</topic>
+          <topic>${prefix}/imu</topic>
       </sensor>
     </gazebo>
 
@@ -242,7 +242,7 @@
       <sensor name='gpu_lidar' type='gpu_lidar'>
           <pose relative_to='${prefix}front_laser'>0 0 0 0 0 0</pose>
           <frame_id>${prefix}front_laser</frame_id>
-          <topic>${prefix}lidar</topic>
+          <topic>${prefix}/lidar</topic>
           <update_rate>10</update_rate>
           <lidar>
               <scan>
@@ -284,9 +284,9 @@
         <min_acceleration>-5</min_acceleration>
         <max_acceleration>5</max_acceleration>
         <max_velocity>1.5</max_velocity>
-        <topic>${prefix}cmd_vel</topic>
+        <topic>${prefix}/cmd_vel</topic>
         <frame_id>${prefix}odom</frame_id>
-        <odom_topic>${prefix}odom</odom_topic>
+        <odom_topic>${prefix}/odom</odom_topic>
         <child_frame_id>${prefix}base_footprint</child_frame_id>
         <tf_topic>tf</tf_topic>
       </plugin>
