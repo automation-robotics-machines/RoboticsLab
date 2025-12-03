@@ -4,6 +4,7 @@
 
   <xacro:arg name="omni" default="false" />
   <xacro:arg name="mm" default="false" />
+  <xacro:arg name="simulation_controllers" default="$(find lampo_description)/config/ur_controllers.yaml" />
   
   <xacro:if value="$(arg omni)">
     <xacro:include filename="$(find lampo_description)/urdf/sweepee/sweepee_omni.xacro" />

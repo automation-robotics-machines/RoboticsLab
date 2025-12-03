@@ -54,61 +54,90 @@ def generate_launch_description():
     
     declared_arguments.append(
         DeclareLaunchArgument(
-            "robot_namespace",
+            "namespace",
             default_value="r1_",
             description="Namespace and tf prefix for the robot"
         )
     )
 
-    robot_namespace          = LaunchConfiguration("robot_namespace")
+    namespace                = LaunchConfiguration("namespace")
     description_package      = LaunchConfiguration("description_package")
     description_file         = LaunchConfiguration("description_file")
     mm                       = LaunchConfiguration("mm")
 
+    def create_description_config(context):
+        namespace_str = context.perform_substitution(namespace)
 
+        # Load original ur_controllers config
+        controllers_file = os.path.join(get_package_share_directory('lampo_description'), 'config', 'ur_controllers.yaml')
+        with open(controllers_file, 'r') as f:
+            controllers_data = yaml.safe_load(f)
 
-    robot_description_content_1 = launch_ros.descriptions.ParameterValue(Command(
+        # Recursively replace r1_ with namespace in the entire YAML structure
+        def replace_in_structure(obj):
+            if isinstance(obj, dict):
+                return {key: replace_in_structure(value) for key, value in obj.items()}
+            elif isinstance(obj, list):
+                return [replace_in_structure(item) for item in obj]
+            elif isinstance(obj, str):
+                return obj.replace('r1_', namespace_str)
+            else:
+                return obj
+
+        controllers_data = replace_in_structure(controllers_data)
+
+        # Write to temporary file
+        temp_file = tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False)
+        yaml.dump(controllers_data, temp_file)
+        temp_file.close()
+
+        robot_description_content_1 = launch_ros.descriptions.ParameterValue(Command(
         [
             PathJoinSubstitution([FindExecutable(name="xacro")]),
             " ",
             PathJoinSubstitution([FindPackageShare(description_package), "urdf", description_file]),
-            " ","name:=",robot_namespace,"/mm1",
+            " ","name:=",namespace,"/mm1",
             " ","omni:=","true",
             " ","mm:=",mm,
-            " ","prefix:=",robot_namespace,
+            " ","prefix:=",namespace,
+            " ","simulation_controllers:=",temp_file.name,
             ]), value_type=str)
 
   
 
-    robot_description_1  = {"robot_description": robot_description_content_1}
-    frame_prefix_param_1 = {"frame_prefix": ""}
-    
-    robot_state_publisher_node_1 = Node(
-        package="robot_state_publisher",
-        executable="robot_state_publisher",
-        # name="robot_state_publisher_" + robot_namespace,
-        namespace=robot_namespace,
-        output="screen",
-        remappings=[
-            ('/tf', 'tf'),
-            ('/tf_static', 'tf_static')
-        ],
-        parameters=[robot_description_1,frame_prefix_param_1,{"use_sim_time": True}],
-    )
+        robot_description_1  = {"robot_description": robot_description_content_1}
+        frame_prefix_param_1 = {"frame_prefix": ""}
+
+        robot_state_publisher_node_1 = Node(
+            package="robot_state_publisher",
+            executable="robot_state_publisher",
+            namespace=namespace,
+            output="screen",
+            remappings=[
+                ('/tf', 'tf'),
+                ('/tf_static', 'tf_static')
+            ],
+            parameters=[robot_description_1,frame_prefix_param_1,{"use_sim_time": True}],
+        )
+
+        return [robot_state_publisher_node_1]
+
+    robot_state_publisher_node_1 = OpaqueFunction(function=create_description_config)
+
+
 
     spawn_sweepee_1 = Node(
         name='spawn1',
         package='ros_gz_sim',
         executable='create',
         output='screen',
-        arguments=[ '-topic', [robot_namespace, '/robot_description'],
-                   '-name', robot_namespace,
+        arguments=[ '-topic', [namespace, '/robot_description'],
+                   '-name', namespace,
                    '-allow_renaming', 'true',
                    '-x', '-3.5',
                    '-y', '2.2',
                    '-z', '0.2',
                    '-Y', '0.3'],
-        # remappings=[('/sweepee', [robot_namespace, '/robot_description'])],
         parameters=[{"use_sim_time": True}],
     )
 
@@ -117,7 +146,7 @@ def generate_launch_description():
     tf_1 = Node(
         package="topic_tools",
         executable="relay",
-        namespace=robot_namespace,
+        namespace=namespace,
         name='relay_tf1_to_global',
         arguments=[['tf'], '/tf'],
 
@@ -126,7 +155,7 @@ def generate_launch_description():
     tf_1s = Node(
         package="topic_tools",
         executable="relay",
-        namespace=robot_namespace,
+        namespace=namespace,
         name='relay_tf1s_to_global',
         arguments=[['tf_static'], '/tf_static'],
 
@@ -135,9 +164,9 @@ def generate_launch_description():
     twist_repub = Node(
         package="lampo_description",
         executable="twist_repub.py",
-        namespace=robot_namespace,
+        namespace=namespace,
         name='twist_repub',
-        parameters=[{'robot_namespace': robot_namespace}]
+        parameters=[{'namespace': namespace}]
     )
 
 
@@ -175,7 +204,7 @@ def generate_launch_description():
 ########## BRIDGE
 
     def create_bridge_config(context):
-        namespace = context.perform_substitution(robot_namespace)
+        namespace_str = context.perform_substitution(namespace)
 
         # Load original bridge config
         bridge_file = os.path.join(get_package_share_directory('lampo_description'), 'config', 'bridge.yaml')
@@ -187,15 +216,21 @@ def generate_launch_description():
             if 'ros_topic_name' in bridge_item:
                 topic = bridge_item['ros_topic_name']
                 if topic == '/prefix/cmd_vel':
-                    bridge_item['ros_topic_name'] = f'/{namespace}/cmd_vel'
+                    bridge_item['ros_topic_name'] = f'/{namespace_str}/cmd_vel'
                 elif topic == '/prefix/odom':
-                    bridge_item['ros_topic_name'] = f'/{namespace}/odom'
+                    bridge_item['ros_topic_name'] = f'/{namespace_str}/odom'
                 elif topic == '/prefix/lidar':
-                    bridge_item['ros_topic_name'] = f'/{namespace}/lidar'
+                    bridge_item['ros_topic_name'] = f'/{namespace_str}/lidar'
                 elif topic == '/prefix/imu':
-                    bridge_item['ros_topic_name'] = f'/{namespace}/imu'
+                    bridge_item['ros_topic_name'] = f'/{namespace_str}/imu'
+                elif topic == '/prefix/rgbd_camera/camera_info':
+                    bridge_item['ros_topic_name'] = f'/{namespace_str}/rgbd_camera/camera_info'
+                elif topic == '/prefix/rgbd_camera/depth_image':
+                    bridge_item['ros_topic_name'] = f'/{namespace_str}/rgbd_camera/depth_image'
+                elif topic == '/prefix/rgbd_camera/image':
+                    bridge_item['ros_topic_name'] = f'/{namespace_str}/rgbd_camera/image'
                 elif topic == '/prefix/tf':
-                    bridge_item['ros_topic_name'] = f'/{namespace}/tf'
+                    bridge_item['ros_topic_name'] = f'/{namespace_str}/tf'
 
         # Write to temporary file
         temp_file = tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False)
@@ -205,7 +240,7 @@ def generate_launch_description():
         return [Node(
             package="ros_gz_bridge",
             executable="parameter_bridge",
-            namespace=robot_namespace,
+            namespace=namespace,
             output="screen",
             parameters=[{"config_file": temp_file.name}, {"use_sim_time": True}],
         )]
@@ -218,7 +253,7 @@ def generate_launch_description():
         package="controller_manager",
         executable="spawner",
         arguments=["joint_state_broadcaster"],
-        namespace=robot_namespace,
+        namespace=namespace,
         condition=IfCondition(mm),
     )
 
@@ -226,7 +261,7 @@ def generate_launch_description():
         package="controller_manager",
         executable="spawner",
         arguments=["forward_position_controller"],
-        namespace=robot_namespace,
+        namespace=namespace,
         condition=IfCondition(mm),
     )
 
@@ -234,7 +269,7 @@ def generate_launch_description():
         package="controller_manager",
         executable="spawner",
         arguments=["gripper_position_controller"],
-        namespace=robot_namespace,
+        namespace=namespace,
         condition=IfCondition(mm),
     )
 
@@ -242,8 +277,8 @@ def generate_launch_description():
 
 
     nodes_to_start = [
-        gazebo_server,
-        rviz_node,
+        # gazebo_server,
+        # rviz_node,
         tf_1,
         tf_1s,
         twist_repub,
