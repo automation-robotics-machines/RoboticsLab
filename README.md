@@ -1,4 +1,6 @@
-# RoboticsLab - LAMPO Robot Simulation
+# RoboticsLab
+
+![LAMPO Robot Simulation](doc/post.png)
 
 This repository contains ROS 2 packages for the LAMPO robot simulation using Gazebo and Nav2 navigation stack.
 
@@ -23,36 +25,30 @@ The `--symlink-install` flag allows you to modify Python scripts and configurati
 
 ### Launch Simulation and Visualization
 
-To start the Gazebo simulation and RViz visualizer:
+
+Launch empty sandbox with GZ sim world, users might change the default world here by picking the chosen one on Fuel GZ:
 
 ```bash
-cd ros_ws
-source install/setup.bash
-ros2 launch lampo_description lampo_gz_mm.launch.py
+ros2 launch lampo_description lampo_sandbox.launch.py
 ```
 
-This launcher starts:
-- Gazebo simulation with the LAMPO robot model
-- RViz for visualization
-- Robot state publisher
-- Required bridges between ROS 2 and Gazebo
-
-### Launch Navigation Stack
-
-To start the navigation system with Nav2(in another terminal):
+Populate the sandbox with a mobile robot with sensors, or a mobile manipulator with a gripper and a camera (mm:=true). Change the namespace with namespace:={name} when spawning multiple robots. 
+This spawns also the GZ sim bridge for every robot, and the TF topic relays.
 
 ```bash
-cd ros_ws
-source install/setup.bash
-ros2 launch lampo_description lampo_nav_omni.launch.py
+ros2 launch lampo_description lampo_gz_mm.launch.py 
+ros2 launch lampo_description lampo_gz_mm.launch.py namespace:=r2 
+ros2 launch lampo_description lampo_gz_mm.launch.py mm:=true 
+ros2 launch lampo_description lampo_gz_mm.launch.py mm:=true namespace:=mm2 
 ```
 
-This launcher initializes:
-- Nav2 navigation stack
-- AMCL localization
-- Path planning and control
-- Navigation parameters for omnidirectional movement
+Launch navigation stack, match the namespace of the robots spawned previously
 
+```bash
+ros2 launch nav2_bringup navigation_launch.py
+ros2 launch nav2_bringup navigation_launch.py namespace:=r2 
+ros2 launch nav2_bringup navigation_launch.py namespace:=mm2
+```
 ## Windows Users - Devcontainer Setup with VcXsrv
 
 Windows users can run this project using VSCode devcontainers with graphical support via VcXsrv.
