@@ -23,7 +23,6 @@
   <xacro:arg name="safety_pos_margin" default="0.15"/>
   <xacro:arg name="safety_k_position" default="20"/>
 
-  <xacro:arg name="simulation_controllers" default="$(find lampo_description)/config/ur_controllers.yaml" />
   <xacro:arg name="ros_namespace" default="$(arg prefix)" />
 
   <!-- arm -->

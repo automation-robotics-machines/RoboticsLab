@@ -9,8 +9,8 @@ class TwistConverter(Node):
         super().__init__('twist_stamped_to_twist')
 
         # Declare and get the robot namespace parameter
-        self.declare_parameter('robot_namespace', 'r1_')
-        robot_ns = self.get_parameter('robot_namespace').get_parameter_value().string_value
+        self.declare_parameter('namespace', 'r1_')
+        robot_ns = self.get_parameter('namespace').get_parameter_value().string_value
 
         # Build topic names with namespace
         input_topic = f"/{robot_ns}/cmd_vel_smoothed"
