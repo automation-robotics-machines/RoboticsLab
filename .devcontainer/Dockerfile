@@ -7,6 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
     ros-kilted-rviz2 \
     ros-kilted-navigation2 \
+    ros-kilted-topic-tools \
     ros-kilted-turtlebot3* \
     mesa-utils \
     x11-apps \
