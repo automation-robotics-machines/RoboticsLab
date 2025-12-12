@@ -45,9 +45,9 @@ ros2 launch lampo_description lampo_gz_mm.launch.py mm:=true namespace:=mm2
 Launch navigation stack, match the namespace of the robots spawned previously
 
 ```bash
-ros2 launch nav2_bringup navigation_launch.py
-ros2 launch nav2_bringup navigation_launch.py namespace:=r2 
-ros2 launch nav2_bringup navigation_launch.py namespace:=mm2
+ros2 launch lampo_description lampo_nav_omni.launch.py
+ros2 launch lampo_description lampo_nav_omni.launch.py namespace:=r2 
+ros2 launch lampo_description lampo_nav_omni.launch.py namespace:=mm2
 ```
 ## Windows Users - Devcontainer Setup with VcXsrv
 
